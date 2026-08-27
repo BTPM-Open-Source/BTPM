@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Choose a BTPM project</title>
+  </head>
+  <body>
+    <main>
+      <h1>Choose a BTPM project</h1>
+      <p class="support">Select the BTPM project to use in this conversation.</p>
+      <div id="selector-state" class="state" role="status" aria-live="polite">
+        Connecting to the host&hellip;
+      </div>
+      <section
+        id="selector-workspaces"
+        class="workspaces"
+        data-phase="idle"
+        aria-live="polite"
+      ></section>
+      <section
+        id="selector-projects"
+        class="projects"
+        data-phase="idle"
+        aria-live="polite"
+      ></section>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

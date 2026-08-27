@@ -1,0 +1,297 @@
+/* API-Q.PS.3 — Universal Project Selector View styles.
+   System fonts only: no remote font, image or other external asset. */
+
+:root {
+  color-scheme: light;
+  --btpm-fg: #1b1f24;
+  --btpm-muted: #59636e;
+  --btpm-border: #d7dde3;
+  --btpm-surface: #ffffff;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --btpm-fg: #e8edf2;
+  --btpm-muted: #9aa5b1;
+  --btpm-border: #333b44;
+  --btpm-surface: #14181d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+  color: var(--btpm-fg);
+  background: var(--btpm-surface);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+p.support {
+  margin: 0 0 20px;
+  font-size: 0.9375rem;
+  color: var(--btpm-muted);
+}
+
+.state {
+  padding: 14px 16px;
+  border: 1px solid var(--btpm-border);
+  border-radius: 10px;
+  font-size: 0.875rem;
+  color: var(--btpm-muted);
+}
+
+.state[data-state="ready"] {
+  color: var(--btpm-fg);
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 16px;
+  }
+}
+
+/* API-Q.PS.4A — Workspace discovery surface. System fonts only. */
+
+.workspaces {
+  margin-top: 16px;
+}
+
+.workspaces[data-phase="idle"] {
+  display: none;
+}
+
+.workspace-note,
+.workspace-org {
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+  color: var(--btpm-muted);
+}
+
+.workspace-selected {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.workspace-next {
+  margin: 12px 0 0;
+  font-size: 0.875rem;
+  color: var(--btpm-fg);
+}
+
+.workspace-search {
+  width: 100%;
+  padding: 9px 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--btpm-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--btpm-fg);
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.workspace-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.workspace-row {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  border: 1px solid var(--btpm-border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--btpm-fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.workspace-row:hover,
+.workspace-row:focus-visible {
+  border-color: var(--btpm-fg);
+}
+
+.workspace-row-name {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.workspace-row-org {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  color: var(--btpm-muted);
+}
+
+.workspace-change {
+  margin-top: 14px;
+  padding: 8px 12px;
+  border: 1px solid var(--btpm-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--btpm-fg);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+/* API-Q.PS.4B — Project discovery surface. System fonts only. */
+
+.projects {
+  margin-top: 16px;
+}
+
+.projects[data-phase="idle"] {
+  display: none;
+}
+
+.project-note,
+.project-org,
+.project-workspace {
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+  color: var(--btpm-muted);
+}
+
+.project-selected {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.project-next {
+  margin: 12px 0 0;
+  font-size: 0.875rem;
+  color: var(--btpm-fg);
+}
+
+.project-search {
+  width: 100%;
+  padding: 9px 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--btpm-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--btpm-fg);
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.project-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.project-row {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  border: 1px solid var(--btpm-border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--btpm-fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.project-row:hover,
+.project-row:focus-visible {
+  border-color: var(--btpm-fg);
+}
+
+.project-row-name {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.project-row-status {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  color: var(--btpm-muted);
+}
+
+.project-change {
+  margin-top: 14px;
+  padding: 8px 12px;
+  border: 1px solid var(--btpm-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--btpm-fg);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.project-validated {
+  margin: 12px 0 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--btpm-fg);
+}
+
+.project-invalid {
+  margin: 12px 0 0;
+  font-size: 0.875rem;
+  color: var(--btpm-muted);
+}
+
+/* API-Q.PS.5B — Conversation-context activation states. System fonts only. */
+
+.project-activating {
+  margin: 12px 0 0;
+  font-size: 0.875rem;
+  color: var(--btpm-muted);
+}
+
+.project-active {
+  margin: 12px 0 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--btpm-fg);
+}
+
+.project-handoff-failed {
+  margin: 12px 0 0;
+  font-size: 0.875rem;
+  color: var(--btpm-muted);
+}
+
+.project-activate-retry {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--btpm-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--btpm-fg);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}

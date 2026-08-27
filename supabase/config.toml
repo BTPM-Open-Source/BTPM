@@ -1,0 +1,63 @@
+project_id = "your-project-ref"
+
+[functions.send-password-reset]
+verify_jwt = false
+
+# Scheduled KPI App Reporting cron wrapper.
+# Gateway JWT verification is disabled because pg_cron has no human JWT.
+# The function authenticates requests in code using KPI_APP_SCHEDULER_SECRET
+# and remains inactive unless KPI_APP_SCHEDULER_ENABLED="true".
+[functions.run-kpi-app-scheduler-cron]
+verify_jwt = false
+
+# Automatic KPI Snapshot Capture cron wrapper.
+# Gateway JWT verification is disabled because pg_cron has no human JWT.
+# The function authenticates requests in code using KPI_SNAPSHOT_SCHEDULER_SECRET
+# and remains inactive unless KPI_SNAPSHOT_SCHEDULER_ENABLED="true".
+[functions.run-kpi-snapshot-capture-scheduler-cron]
+verify_jwt = false
+
+# Admin diagnostics validate callers in code using Supabase Auth. Gateway JWT
+# verification is disabled because the application uses ES256 signing keys,
+# which are incompatible with the legacy Edge Function gateway verifier.
+[functions.ai-guide-v2-reindex]
+verify_jwt = false
+
+[functions.ai-guide-v2-smoke]
+verify_jwt = false
+
+# Admin-only pipeline trace viewer. Authentication and authorization are
+# enforced in code through Supabase Auth and the canonical admin-authority RPC.
+[functions.ai-guide-v2-trace]
+verify_jwt = false
+
+# The REST API authenticates every protected request in code. Gateway JWT
+# verification is disabled because the legacy verifier is incompatible with
+# the ES256 token model used by the application. This does not permit anonymous
+# protected access.
+[functions.btpm-api-v1]
+verify_jwt = false
+
+# MCP performs its accepted OAuth authentication in code, including bearer
+# token, issuer, resource audience, expiry, subject, signed client_id and
+# Connected App authorization checks. Gateway JWT verification therefore stays
+# disabled and does not imply anonymous MCP access.
+[functions.btpm-mcp]
+verify_jwt = false
+
+# Notification outbox worker. pg_cron has no human JWT, so authentication is
+# performed inside the function using x-notification-worker-secret compared
+# against NOTIFICATION_WORKER_SCHEDULER_SECRET before privileged work begins.
+[functions.process-notifications]
+verify_jwt = false
+
+# UX-MCP-ADMIN.1-C1 — Platform Super Admin protected-resource administration.
+# This project issues ES256-signed Supabase access tokens, which the legacy
+# Edge Function gateway JWT verifier cannot validate; gateway verification is
+# therefore disabled for this function ONLY. The function independently
+# authenticates the Authorization bearer token via createSupabaseTokenVerifier,
+# rejects OAuth-client tokens through assertBrowserSessionOnly, resolves the
+# authenticated human user, and requires is_platform_super_admin before any
+# service-role client is constructed or used. No anonymous access is permitted.
+[functions.platform-api-client-protected-resource]
+verify_jwt = false

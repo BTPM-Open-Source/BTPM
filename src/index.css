@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* BTPM design system. All colors MUST be HSL. */
+
+@layer base {
+  :root {
+    --background: 40 10% 97%;
+    --foreground: 235 38% 18%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 235 38% 18%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 235 38% 18%;
+
+    --primary: 358 85% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 40 10% 93%;
+    --secondary-foreground: 235 38% 18%;
+
+    --muted: 40 10% 95%;
+    --muted-foreground: 235 15% 47%;
+
+    --accent: 40 10% 93%;
+    --accent-foreground: 235 38% 18%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 40 10% 88%;
+    --input: 40 10% 88%;
+    --ring: 358 85% 52%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 235 38% 18%;
+    --sidebar-foreground: 40 10% 90%;
+    --sidebar-primary: 358 85% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 235 30% 24%;
+    --sidebar-accent-foreground: 40 10% 90%;
+    --sidebar-border: 235 30% 22%;
+    --sidebar-ring: 358 85% 55%;
+
+    --success: 142 71% 35%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+  }
+
+  .dark {
+    --background: 235 38% 6%;
+    --foreground: 40 10% 95%;
+
+    --card: 235 38% 9%;
+    --card-foreground: 40 10% 95%;
+
+    --popover: 235 38% 9%;
+    --popover-foreground: 40 10% 95%;
+
+    --primary: 358 85% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 235 30% 17%;
+    --secondary-foreground: 40 10% 95%;
+
+    --muted: 235 30% 17%;
+    --muted-foreground: 235 15% 65%;
+
+    --accent: 235 30% 17%;
+    --accent-foreground: 40 10% 95%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 40 10% 95%;
+
+    --border: 235 30% 17%;
+    --input: 235 30% 17%;
+    --ring: 358 85% 55%;
+
+    --sidebar-background: 235 38% 6%;
+    --sidebar-foreground: 40 10% 90%;
+    --sidebar-primary: 358 85% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 235 30% 12%;
+    --sidebar-accent-foreground: 40 10% 90%;
+    --sidebar-border: 235 30% 14%;
+    --sidebar-ring: 358 85% 55%;
+
+    --success: 142 71% 35%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "@modelcontextprotocol/server": "npm:@modelcontextprotocol/server@2.0.0",
+    "@modelcontextprotocol/ext-apps/server": "npm:@modelcontextprotocol/ext-apps@1.7.5/server",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.50.0"
+  }
+}

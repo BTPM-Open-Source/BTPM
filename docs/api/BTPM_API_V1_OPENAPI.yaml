@@ -1,0 +1,2118 @@
+openapi: 3.1.0
+info:
+  title: BTPM API v1
+  version: 1.0.0
+  description: |
+    Machine-readable contract for the current BTPM REST API v1 surface.
+
+    This specification was regenerated against repository source at
+    df51012ac283de1dd901cb52a2eae1dba17d3cae and covers all 50 operationIds
+    advertised by `supabase/functions/_shared/btpm-api/routes/capabilities.ts`.
+    The live route allowlist and strict route/body parsers remain authoritative
+    if implementation and generated documentation ever drift.
+
+    Protected operations execute only as a delegated BTPM user through an
+    active Connected App. BTPM does not expose client_credentials, static API
+    keys, service-role credentials, or direct database credentials as supported
+    integration identities. Connected-App capabilities are server-side BTPM
+    grants, not OAuth scope strings.
+
+    Request schemas are intentionally closed and mirror the live route parsers.
+    Read/result schemas are intentionally conservative where the runtime returns
+    bounded domain-specific payloads: integrators must not infer write authority
+    from response fields not accepted by the corresponding request schema.
+  x-btpm-operation-count: 50
+  x-btpm-read-operation-count: 24
+  x-btpm-mutation-operation-count: 26
+  x-btpm-generated-against: df51012ac283de1dd901cb52a2eae1dba17d3cae
+servers:
+  - url: https://{supabaseProjectHost}/functions/v1/btpm-api-v1
+    description: Deployment-specific BTPM Supabase Edge Function endpoint.
+    variables:
+      supabaseProjectHost:
+        default: example.supabase.co
+        description: Configure the actual BTPM environment host.
+security:
+  - delegatedUserBearer: []
+tags:
+  - name: Metadata
+  - name: Identity
+  - name: Directory
+  - name: Programs
+  - name: Projects
+  - name: Workspace members
+  - name: Execution updates
+  - name: Risks
+  - name: Blockers
+  - name: Phases
+  - name: Tasks
+  - name: Portfolios
+  - name: KPIs
+paths:
+  /v1/version:
+    get:
+      tags: [Metadata]
+      operationId: version.get
+      summary: Get API version metadata.
+      security: []
+      x-btpm-operation-class: read
+      responses:
+        '200':
+          description: API version metadata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionPayload'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/capabilities:
+    get:
+      tags: [Metadata]
+      operationId: capabilities.get
+      summary: Get the canonical v1 operation inventory.
+      description: Advertises implementation support, not caller-specific authorization.
+      security: []
+      x-btpm-operation-class: read
+      responses:
+        '200':
+          description: Current 50-operation v1 inventory.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapabilitiesPayload'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/me:
+    get:
+      tags: [Identity]
+      operationId: me.get
+      summary: Resolve the delegated caller and optional context authority.
+      description: |
+        Accepts either no query parameters or exactly `contextType` and
+        `contextId` together. Unknown or duplicate query parameters are rejected.
+      x-btpm-operation-class: read
+      parameters:
+        - name: contextType
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [organization, workspace, project]
+        - name: contextId
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/NonNilUuid'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadObjectResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/organizations:
+    get:
+      tags: [Directory]
+      operationId: organizations.get
+      summary: List Organizations available to the delegated caller.
+      x-btpm-operation-class: read
+      parameters:
+        - $ref: '#/components/parameters/OffsetLimit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadCollectionResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/workspaces:
+    get:
+      tags: [Directory]
+      operationId: workspaces.get
+      summary: List Workspaces in one Organization.
+      description: The external Organization query key is exactly `organization_id`; camelCase aliases are rejected.
+      x-btpm-operation-class: read
+      parameters:
+        - name: organization_id
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/NonNilUuid'
+        - $ref: '#/components/parameters/OffsetLimit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadCollectionResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/programs:
+    get:
+      tags: [Programs]
+      operationId: programs.get
+      summary: List Programs in one Workspace.
+      description: The external Workspace query key is exactly `workspace_id`; camelCase aliases are rejected.
+      x-btpm-operation-class: read
+      parameters:
+        - name: workspace_id
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/NonNilUuid'
+        - $ref: '#/components/parameters/OffsetLimit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadCollectionResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      tags: [Programs]
+      operationId: programs.create
+      summary: Create a Program in a Workspace.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: false
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProgramRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        '201':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/programs/{programId}:
+    parameters:
+      - $ref: '#/components/parameters/ProgramId'
+    get:
+      tags: [Programs]
+      operationId: programs.get_by_id
+      summary: Get one Program.
+      x-btpm-operation-class: read
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadObjectResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    patch:
+      tags: [Programs]
+      operationId: programs.update
+      summary: Update Program metadata.
+      description: '`expectedUpdatedAt` is required. `name`, `status`, and `description` are optional; description preserves explicit-clear semantics.'
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProgramRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/projects:
+    get:
+      tags: [Projects]
+      operationId: projects.get
+      summary: List Projects in one Workspace.
+      description: |
+        The external Workspace query key is exactly `workspace_id`. Returned
+        Projects are constrained by delegated-user authority and Connected-App
+        Project enablement.
+      x-btpm-operation-class: read
+      parameters:
+        - name: workspace_id
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/NonNilUuid'
+        - $ref: '#/components/parameters/OffsetLimit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadCollectionResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      tags: [Projects]
+      operationId: projects.create
+      summary: Create a blank Project in a Workspace.
+      description: Project creation does not automatically enable the new Project for the Connected App.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: false
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        '201':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/projects/{projectId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    get:
+      tags: [Projects]
+      operationId: projects.get_by_id
+      summary: Get one Project.
+      x-btpm-operation-class: read
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadObjectResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    patch:
+      tags: [Projects]
+      operationId: projects.update
+      summary: Update Project metadata and narrative fields.
+      description: Sparse PATCH with explicit field-presence semantics; planning dates and Project status are not editable through this route.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/projects/{projectId}/planning:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    get:
+      tags: [Projects]
+      operationId: projects.planning.get
+      summary: Get canonical Project planning context.
+      x-btpm-operation-class: read
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadObjectResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/projects/{projectId}/transition:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    post:
+      tags: [Projects]
+      operationId: projects.transition
+      summary: Execute a Project status transition.
+      description: Soft completion warnings require an explicit follow-up with `confirmWarnings=true`; callers must not silently auto-confirm business warnings.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransitionProjectRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/execution-updates:
+    get:
+      tags: [Execution updates]
+      operationId: execution_updates.get
+      summary: List append-only execution updates for a Phase or Task.
+      x-btpm-operation-class: read
+      parameters:
+        - name: targetType
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [phase, task]
+        - name: targetId
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/NonNilUuid'
+        - $ref: '#/components/parameters/CursorLimit500'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadCollectionResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      tags: [Execution updates]
+      operationId: execution_updates.append
+      summary: Append a dated execution update to a Phase or Task.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: false
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppendExecutionUpdateRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        '201':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/projects/{projectId}/risks:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    get:
+      tags: [Risks]
+      operationId: risks.get
+      summary: List Risks for one Project.
+      x-btpm-operation-class: read
+      parameters:
+        - $ref: '#/components/parameters/CursorLimit500'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadCollectionResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/risks:
+    post:
+      tags: [Risks]
+      operationId: risks.create
+      summary: Create a Risk against a Project, Phase, or Task.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: false
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRiskRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        '201':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/risks/{riskId}:
+    parameters:
+      - $ref: '#/components/parameters/RiskId'
+    get:
+      tags: [Risks]
+      operationId: risks.get_by_id
+      summary: Get one Risk.
+      x-btpm-operation-class: read
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadObjectResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    patch:
+      tags: [Risks]
+      operationId: risks.update
+      summary: Replace the complete scalar desired state of one Risk.
+      description: All seven body keys are required; target reassignment is not supported.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRiskRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/projects/{projectId}/blockers:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    get:
+      tags: [Blockers]
+      operationId: blockers.get
+      summary: List Blockers for one Project.
+      x-btpm-operation-class: read
+      parameters:
+        - $ref: '#/components/parameters/CursorLimit500'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadCollectionResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/blockers:
+    post:
+      tags: [Blockers]
+      operationId: blockers.create
+      summary: Create a Blocker against a Project, Phase, or Task.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: false
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBlockerRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        '201':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/blockers/{blockerId}:
+    parameters:
+      - $ref: '#/components/parameters/BlockerId'
+    get:
+      tags: [Blockers]
+      operationId: blockers.get_by_id
+      summary: Get one Blocker.
+      x-btpm-operation-class: read
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadObjectResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    patch:
+      tags: [Blockers]
+      operationId: blockers.update
+      summary: Replace the complete scalar desired state of one Blocker.
+      description: All five body keys are required; target reassignment and resolution metadata are not accepted.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBlockerRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/phases:
+    post:
+      tags: [Phases]
+      operationId: phases.create
+      summary: Create a Phase in a Project.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: false
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePhaseRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        '201':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/phases/{phaseId}:
+    parameters:
+      - $ref: '#/components/parameters/PhaseId'
+    get:
+      tags: [Phases]
+      operationId: phases.get_by_id
+      summary: Get one Phase.
+      x-btpm-operation-class: read
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadObjectResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    patch:
+      tags: [Phases]
+      operationId: phases.update
+      summary: Replace complete Phase metadata desired state.
+      description: All five body keys are required; planning and ordering are separate commands.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePhaseRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/projects/{projectId}/phases/reorder:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    post:
+      tags: [Phases]
+      operationId: phases.reorder
+      summary: Reorder the complete canonical Phase sibling set.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderPhasesRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/phases/{phaseId}/planning:
+    parameters:
+      - $ref: '#/components/parameters/PhaseId'
+    patch:
+      tags: [Phases]
+      operationId: phases.plan
+      summary: Change Phase planning dates.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanPhaseRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/tasks:
+    post:
+      tags: [Tasks]
+      operationId: tasks.create
+      summary: Create a Task in a Phase.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: false
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        '201':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/tasks/{taskId}:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    get:
+      tags: [Tasks]
+      operationId: tasks.get_by_id
+      summary: Get one Task.
+      x-btpm-operation-class: read
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadObjectResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    patch:
+      tags: [Tasks]
+      operationId: tasks.update
+      summary: Replace complete Task metadata desired state.
+      description: All seven body keys are required; Phase movement, planning, ordering, assignment, and execution transition are separate commands.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/phases/{phaseId}/tasks/reorder:
+    parameters:
+      - $ref: '#/components/parameters/PhaseId'
+    post:
+      tags: [Tasks]
+      operationId: tasks.reorder
+      summary: Reorder the complete canonical Task sibling set.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderTasksRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/tasks/{taskId}/planning:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    patch:
+      tags: [Tasks]
+      operationId: tasks.plan
+      summary: Change Task planning dates.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanTaskRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/tasks/{taskId}/assignee:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    put:
+      tags: [Tasks]
+      operationId: tasks.assign
+      summary: Assign or clear the Task assignee.
+      description: This dedicated command intentionally has no optimistic-concurrency token.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: false
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignTaskRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/tasks/{taskId}/transition:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    post:
+      tags: [Tasks]
+      operationId: tasks.transition
+      summary: Apply bounded Task execution transition/actual-date intent.
+      description: Completed-task locking and reopen rules remain canonical server-side business rules.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransitionTaskRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/workspaces/{workspaceId}/members:
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceId'
+    get:
+      tags: [Workspace members]
+      operationId: workspace_members.get
+      summary: List bounded Workspace member identities for integration use.
+      x-btpm-operation-class: read
+      parameters:
+        - $ref: '#/components/parameters/OffsetLimit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadCollectionResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/portfolios:
+    get:
+      tags: [Portfolios]
+      operationId: portfolios.get
+      summary: List Portfolio Items in one Organization.
+      description: External query keys are exactly `organization_id` and `include_archived`; camelCase aliases are rejected.
+      x-btpm-operation-class: read
+      parameters:
+        - name: organization_id
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/NonNilUuid'
+        - $ref: '#/components/parameters/OffsetLimit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/IncludeArchived'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadCollectionResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      tags: [Portfolios]
+      operationId: portfolios.create
+      summary: Create a Portfolio Item in an Organization.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: false
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePortfolioRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        '201':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/portfolios/{portfolioId}:
+    parameters:
+      - $ref: '#/components/parameters/PortfolioId'
+    get:
+      tags: [Portfolios]
+      operationId: portfolios.get_by_id
+      summary: Get one Portfolio Item.
+      x-btpm-operation-class: read
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadObjectResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    patch:
+      tags: [Portfolios]
+      operationId: portfolios.update
+      summary: Update Portfolio metadata.
+      description: '`expectedUpdatedAt` plus at least one mutable field is required; explicit clears are supported only for code, description, and ownerId.'
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePortfolioRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/portfolios/{portfolioId}/projects:
+    parameters:
+      - $ref: '#/components/parameters/PortfolioId'
+    get:
+      tags: [Portfolios]
+      operationId: portfolios.projects.get
+      summary: List Projects assigned to one Portfolio Item.
+      x-btpm-operation-class: read
+      parameters:
+        - $ref: '#/components/parameters/OffsetLimit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadCollectionResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/projects/{projectId}/portfolio:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    put:
+      tags: [Portfolios]
+      operationId: portfolios.assign_project
+      summary: Assign, move, or clear a Project's Portfolio assignment.
+      description: This dedicated command intentionally has no optimistic-concurrency token.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: false
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignProjectPortfolioRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/projects/{projectId}/kpis:
+    parameters:
+      - $ref: '#/components/parameters/LowercaseProjectId'
+    get:
+      tags: [KPIs]
+      operationId: kpis.get
+      summary: List KPI definitions for one Project.
+      description: KPI nested paths enforce lowercase UUID casing. The archive query key is exactly `include_archived`.
+      x-btpm-operation-class: read
+      parameters:
+        - $ref: '#/components/parameters/OffsetLimit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/IncludeArchived'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadCollectionResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      tags: [KPIs]
+      operationId: kpis.create
+      summary: Create a KPI definition for one Project.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: false
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateKpiRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        '201':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/kpis/{kpiId}:
+    parameters:
+      - $ref: '#/components/parameters/KpiId'
+    get:
+      tags: [KPIs]
+      operationId: kpis.get_by_id
+      summary: Get one KPI definition.
+      x-btpm-operation-class: read
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadObjectResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    patch:
+      tags: [KPIs]
+      operationId: kpis.update
+      summary: Update a KPI definition.
+      description: Sparse PATCH with explicit presence semantics. Internal `_set_*` fields are never accepted from clients.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: true
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateKpiRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /v1/kpis/{kpiId}/updates:
+    parameters:
+      - $ref: '#/components/parameters/KpiId'
+    get:
+      tags: [KPIs]
+      operationId: kpis.updates.get
+      summary: List KPI update history using an opaque cursor.
+      x-btpm-operation-class: read
+      parameters:
+        - $ref: '#/components/parameters/KpiUpdatesLimit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadCollectionResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      tags: [KPIs]
+      operationId: kpis.updates.append
+      summary: Append one operational KPI value update.
+      x-btpm-operation-class: mutation
+      x-btpm-idempotency-required: true
+      x-btpm-concurrency-required: false
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XCorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppendKpiUpdateRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/MutationResponse'
+        '201':
+          $ref: '#/components/responses/MutationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+components:
+  securitySchemes:
+    delegatedUserBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Bearer obtained through the approved delegated-user OAuth flow for an
+        active BTPM Connected App. The token represents a real BTPM user and a
+        signed OAuth client identity. BTPM Connected-App capabilities are
+        evaluated server-side and are not OAuth scope strings.
+
+  parameters:
+    OffsetLimit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+    Offset:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+        default: 0
+    Search:
+      name: search
+      in: query
+      required: false
+      schema:
+        type: string
+        maxLength: 100
+    IncludeArchived:
+      name: include_archived
+      in: query
+      required: false
+      description: Only literal `true` or `false` is accepted; default is false.
+      schema:
+        type: boolean
+        default: false
+    CursorLimit500:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 500
+        default: 100
+    KpiUpdatesLimit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Opaque base64url keyset cursor. Persist and replay exactly; do not edit or infer scope from it.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 512
+        pattern: '^[A-Za-z0-9_-]+$'
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Reuse the same key for retries of the same canonical business mutation.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 255
+        pattern: '^[A-Za-z0-9._~:@/+!=-]{1,255}$'
+    XRequestId:
+      name: X-Request-ID
+      in: header
+      required: false
+      schema:
+        type: string
+        maxLength: 128
+    XCorrelationId:
+      name: X-Correlation-ID
+      in: header
+      required: false
+      schema:
+        type: string
+        maxLength: 128
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/NonNilUuid'
+    LowercaseProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/LowercaseNonNilUuid'
+    ProgramId:
+      name: programId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/NonNilUuid'
+    WorkspaceId:
+      name: workspaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/NonNilUuid'
+    RiskId:
+      name: riskId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/NonNilUuid'
+    BlockerId:
+      name: blockerId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/NonNilUuid'
+    PhaseId:
+      name: phaseId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/NonNilUuid'
+    TaskId:
+      name: taskId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/NonNilUuid'
+    PortfolioId:
+      name: portfolioId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/NonNilUuid'
+    KpiId:
+      name: kpiId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/LowercaseNonNilUuid'
+
+  responses:
+    ReadObjectResponse:
+      description: Authorized bounded domain object. Exact response projection is owned by the live delegated reader.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReadObject'
+    ReadCollectionResponse:
+      description: Authorized bounded collection. Pagination is route-specific as documented by its query parameters.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReadCollection'
+    MutationResponse:
+      description: Bounded canonical mutation result; may represent applied, replayed, no-change, or an explicitly modeled business outcome.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MutationResult'
+    ErrorResponse:
+      description: Bounded safe error. No raw SQL, token, service-role, stack-trace, or protected database details are exposed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+  schemas:
+    NonNilUuid:
+      type: string
+      format: uuid
+      not:
+        const: 00000000-0000-0000-0000-000000000000
+    LowercaseNonNilUuid:
+      allOf:
+        - $ref: '#/components/schemas/NonNilUuid'
+        - type: string
+          pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    CalendarDate:
+      type: string
+      format: date
+      pattern: '^\d{4}-\d{2}-\d{2}$'
+    ConcurrencyTimestamp:
+      type: string
+      description: Timezone-aware PostgreSQL-compatible timestamptz obtained from an authoritative BTPM read and preserved verbatim.
+      pattern: '^(\d{4})-(\d{2})-(\d{2})[Tt ](\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,9}))?(Z|z|[+-]\d{2}(?::?\d{2})?)$'
+    PmStatus:
+      type: string
+      enum: [planned, active, completed, on_hold, cancelled]
+    Priority:
+      type: string
+      enum: [low, medium, high, critical]
+    WorkItemType:
+      type: string
+      enum: [work_item, milestone, deliverable, decision, review]
+    VersionPayload:
+      type: object
+      additionalProperties: false
+      required: [service, apiVersion]
+      properties:
+        service:
+          const: btpm-api
+        apiVersion:
+          const: v1
+    CapabilitiesPayload:
+      type: object
+      additionalProperties: false
+      required: [service, apiVersion, supportedOperations]
+      properties:
+        service:
+          const: btpm-api
+        apiVersion:
+          const: v1
+        supportedOperations:
+          type: array
+          minItems: 50
+          maxItems: 50
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+              - version.get
+              - capabilities.get
+              - me.get
+              - organizations.get
+              - workspaces.get
+              - programs.get
+              - programs.get_by_id
+              - projects.get
+              - projects.get_by_id
+              - projects.planning.get
+              - execution_updates.append
+              - risks.create
+              - risks.update
+              - blockers.create
+              - blockers.update
+              - phases.create
+              - phases.update
+              - phases.reorder
+              - phases.plan
+              - tasks.create
+              - tasks.update
+              - tasks.reorder
+              - tasks.plan
+              - tasks.assign
+              - tasks.transition
+              - risks.get
+              - risks.get_by_id
+              - blockers.get
+              - blockers.get_by_id
+              - execution_updates.get
+              - phases.get_by_id
+              - tasks.get_by_id
+              - projects.create
+              - projects.update
+              - projects.transition
+              - programs.create
+              - programs.update
+              - workspace_members.get
+              - portfolios.get
+              - portfolios.get_by_id
+              - portfolios.projects.get
+              - portfolios.create
+              - portfolios.update
+              - portfolios.assign_project
+              - kpis.get
+              - kpis.get_by_id
+              - kpis.updates.get
+              - kpis.create
+              - kpis.update
+              - kpis.updates.append
+    ReadObject:
+      type: object
+      additionalProperties: true
+      description: Conservative schema for a bounded authorized read projection; exact domain fields are defined by the live delegated reader.
+    ReadCollection:
+      type: object
+      additionalProperties: true
+      description: Conservative schema for a bounded authorized collection and its route-specific pagination metadata.
+    MutationResult:
+      type: object
+      additionalProperties: true
+      description: Conservative schema for the bounded mutation result. Request schemas below define the only accepted caller-controlled business fields.
+    ErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required: [error, requestId]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                - invalid_request
+                - invalid_request_id
+                - invalid_json
+                - invalid_content_length
+                - unsupported_media_type
+                - request_too_large
+                - cors_origin_denied
+                - route_not_found
+                - not_authorized
+                - concurrency_conflict
+                - idempotency_conflict
+                - idempotency_pending
+                - rate_limit_exceeded
+                - api_unavailable
+                - request_timeout
+                - internal_error
+            message:
+              type: string
+        requestId:
+          type: string
+
+    AppendExecutionUpdateRequest:
+      type: object
+      additionalProperties: false
+      required: [targetType, targetId, summary, updateDate]
+      properties:
+        targetType:
+          type: string
+          enum: [phase, task]
+        targetId:
+          $ref: '#/components/schemas/NonNilUuid'
+        summary:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        updateDate:
+          $ref: '#/components/schemas/CalendarDate'
+        statusLabel:
+          type: [string, 'null']
+          maxLength: 255
+
+    CreateRiskRequest:
+      type: object
+      additionalProperties: false
+      required: [targetType, targetId, title]
+      properties:
+        targetType:
+          type: string
+          enum: [project, phase, task]
+        targetId:
+          $ref: '#/components/schemas/NonNilUuid'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 500
+        description:
+          type: [string, 'null']
+          maxLength: 4000
+        mitigationPlan:
+          type: [string, 'null']
+          maxLength: 4000
+        likelihood:
+          type: string
+          enum: [low, medium, high]
+          default: medium
+        impact:
+          type: string
+          enum: [low, medium, high, critical]
+          default: medium
+        status:
+          type: string
+          enum: [open, under_mitigation, monitoring, realized, closed]
+          default: open
+    UpdateRiskRequest:
+      type: object
+      additionalProperties: false
+      required: [expectedUpdatedAt, title, description, mitigationPlan, likelihood, impact, status]
+      properties:
+        expectedUpdatedAt:
+          $ref: '#/components/schemas/ConcurrencyTimestamp'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 500
+        description:
+          type: [string, 'null']
+          maxLength: 4000
+        mitigationPlan:
+          type: [string, 'null']
+          maxLength: 4000
+        likelihood:
+          type: string
+          enum: [low, medium, high]
+        impact:
+          type: string
+          enum: [low, medium, high, critical]
+        status:
+          type: string
+          enum: [open, under_mitigation, monitoring, realized, closed]
+
+    CreateBlockerRequest:
+      type: object
+      additionalProperties: false
+      required: [targetType, targetId, title]
+      properties:
+        targetType:
+          type: string
+          enum: [project, phase, task]
+        targetId:
+          $ref: '#/components/schemas/NonNilUuid'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 500
+        description:
+          type: [string, 'null']
+          maxLength: 4000
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+          default: medium
+        status:
+          type: string
+          enum: [open, in_progress, resolved]
+          default: open
+    UpdateBlockerRequest:
+      type: object
+      additionalProperties: false
+      required: [expectedUpdatedAt, title, description, severity, status]
+      properties:
+        expectedUpdatedAt:
+          $ref: '#/components/schemas/ConcurrencyTimestamp'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 500
+        description:
+          type: [string, 'null']
+          maxLength: 4000
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        status:
+          type: string
+          enum: [open, in_progress, resolved]
+
+    CreatePhaseRequest:
+      type: object
+      additionalProperties: false
+      required: [projectId, name]
+      properties:
+        projectId:
+          $ref: '#/components/schemas/NonNilUuid'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 500
+        description:
+          type: [string, 'null']
+          maxLength: 4000
+        status:
+          $ref: '#/components/schemas/PmStatus'
+        phaseType:
+          $ref: '#/components/schemas/WorkItemType'
+        startDate:
+          oneOf:
+            - $ref: '#/components/schemas/CalendarDate'
+            - type: 'null'
+        targetEndDate:
+          oneOf:
+            - $ref: '#/components/schemas/CalendarDate'
+            - type: 'null'
+        sortOrder:
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 100000
+    UpdatePhaseRequest:
+      type: object
+      additionalProperties: false
+      required: [expectedUpdatedAt, name, description, status, phaseType]
+      properties:
+        expectedUpdatedAt:
+          $ref: '#/components/schemas/ConcurrencyTimestamp'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 500
+        description:
+          type: [string, 'null']
+          maxLength: 4000
+        status:
+          $ref: '#/components/schemas/PmStatus'
+        phaseType:
+          $ref: '#/components/schemas/WorkItemType'
+    ReorderPhaseRow:
+      type: object
+      additionalProperties: false
+      required: [phaseId, expectedUpdatedAt, sortOrder]
+      properties:
+        phaseId:
+          $ref: '#/components/schemas/NonNilUuid'
+        expectedUpdatedAt:
+          $ref: '#/components/schemas/ConcurrencyTimestamp'
+        sortOrder:
+          type: integer
+          minimum: 0
+          maximum: 100000
+    ReorderPhasesRequest:
+      type: object
+      additionalProperties: false
+      required: [rows]
+      properties:
+        rows:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items:
+            $ref: '#/components/schemas/ReorderPhaseRow'
+    PlanPhaseRequest:
+      type: object
+      additionalProperties: false
+      required: [expectedUpdatedAt, startDate, targetEndDate, confirmParentExtension]
+      properties:
+        expectedUpdatedAt:
+          $ref: '#/components/schemas/ConcurrencyTimestamp'
+        startDate:
+          oneOf:
+            - $ref: '#/components/schemas/CalendarDate'
+            - type: 'null'
+        targetEndDate:
+          oneOf:
+            - $ref: '#/components/schemas/CalendarDate'
+            - type: 'null'
+        confirmParentExtension:
+          type: boolean
+
+    CreateTaskRequest:
+      type: object
+      additionalProperties: false
+      required: [phaseId, name]
+      properties:
+        phaseId:
+          $ref: '#/components/schemas/NonNilUuid'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 500
+        description:
+          type: [string, 'null']
+          maxLength: 4000
+        status:
+          $ref: '#/components/schemas/PmStatus'
+        priority:
+          $ref: '#/components/schemas/Priority'
+        taskType:
+          $ref: '#/components/schemas/WorkItemType'
+        startDate:
+          oneOf:
+            - $ref: '#/components/schemas/CalendarDate'
+            - type: 'null'
+        dueDate:
+          oneOf:
+            - $ref: '#/components/schemas/CalendarDate'
+            - type: 'null'
+        estimatedHours:
+          type: [number, 'null']
+          minimum: 0
+          maximum: 999999.99
+        sortOrder:
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 100000
+    UpdateTaskRequest:
+      type: object
+      additionalProperties: false
+      required: [expectedUpdatedAt, name, description, status, priority, taskType, estimatedHours]
+      properties:
+        expectedUpdatedAt:
+          $ref: '#/components/schemas/ConcurrencyTimestamp'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 500
+        description:
+          type: [string, 'null']
+          maxLength: 4000
+        status:
+          oneOf:
+            - $ref: '#/components/schemas/PmStatus'
+            - type: 'null'
+        priority:
+          oneOf:
+            - $ref: '#/components/schemas/Priority'
+            - type: 'null'
+        taskType:
+          oneOf:
+            - $ref: '#/components/schemas/WorkItemType'
+            - type: 'null'
+        estimatedHours:
+          type: [number, 'null']
+          minimum: 0
+          maximum: 999999.99
+    ReorderTaskRow:
+      type: object
+      additionalProperties: false
+      required: [taskId, expectedUpdatedAt, sortOrder]
+      properties:
+        taskId:
+          $ref: '#/components/schemas/NonNilUuid'
+        expectedUpdatedAt:
+          $ref: '#/components/schemas/ConcurrencyTimestamp'
+        sortOrder:
+          type: integer
+          minimum: 0
+          maximum: 100000
+    ReorderTasksRequest:
+      type: object
+      additionalProperties: false
+      required: [rows]
+      properties:
+        rows:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items:
+            $ref: '#/components/schemas/ReorderTaskRow'
+    PlanTaskRequest:
+      type: object
+      additionalProperties: false
+      required: [expectedUpdatedAt, startDate, dueDate, confirmParentExtension]
+      properties:
+        expectedUpdatedAt:
+          $ref: '#/components/schemas/ConcurrencyTimestamp'
+        startDate:
+          oneOf:
+            - $ref: '#/components/schemas/CalendarDate'
+            - type: 'null'
+        dueDate:
+          oneOf:
+            - $ref: '#/components/schemas/CalendarDate'
+            - type: 'null'
+        confirmParentExtension:
+          type: boolean
+    AssignTaskRequest:
+      type: object
+      additionalProperties: false
+      required: [assigneeId]
+      properties:
+        assigneeId:
+          oneOf:
+            - $ref: '#/components/schemas/NonNilUuid'
+            - type: 'null'
+    TransitionTaskRequest:
+      type: object
+      additionalProperties: false
+      required: [expectedUpdatedAt, setActualStart, actualStartDate, setActualEnd, actualEndDate, status]
+      properties:
+        expectedUpdatedAt:
+          $ref: '#/components/schemas/ConcurrencyTimestamp'
+        setActualStart:
+          type: boolean
+        actualStartDate:
+          oneOf:
+            - $ref: '#/components/schemas/CalendarDate'
+            - type: 'null'
+        setActualEnd:
+          type: boolean
+        actualEndDate:
+          oneOf:
+            - $ref: '#/components/schemas/CalendarDate'
+            - type: 'null'
+        status:
+          type: [string, 'null']
+          enum: [active, completed, null]
+
+    CreateProjectRequest:
+      type: object
+      additionalProperties: false
+      required: [workspaceId, name]
+      properties:
+        workspaceId:
+          $ref: '#/components/schemas/NonNilUuid'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        programId:
+          oneOf:
+            - $ref: '#/components/schemas/NonNilUuid'
+            - type: 'null'
+        deliveryModel:
+          type: [string, 'null']
+          enum: [internal_delivery, vendor_delivery, co_delivery, null]
+    UpdateProjectRequest:
+      type: object
+      additionalProperties: false
+      required: [expectedUpdatedAt]
+      properties:
+        expectedUpdatedAt:
+          $ref: '#/components/schemas/ConcurrencyTimestamp'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        priority:
+          $ref: '#/components/schemas/Priority'
+        description:
+          type: [string, 'null']
+        charter:
+          type: [string, 'null']
+        goals:
+          type: [string, 'null']
+        scopeIn:
+          type: [string, 'null']
+        scopeOut:
+          type: [string, 'null']
+        businessCase:
+          type: [string, 'null']
+        successCriteria:
+          type: [string, 'null']
+        completionCriteria:
+          type: [string, 'null']
+        budgetNarrative:
+          type: [string, 'null']
+        assumptions:
+          type: [string, 'null']
+        constraints:
+          type: [string, 'null']
+        programId:
+          oneOf:
+            - $ref: '#/components/schemas/NonNilUuid'
+            - type: 'null'
+        deliveryModel:
+          type: [string, 'null']
+          enum: [internal_delivery, vendor_delivery, co_delivery, null]
+    TransitionProjectRequest:
+      type: object
+      additionalProperties: false
+      required: [expectedUpdatedAt, targetStatus]
+      properties:
+        expectedUpdatedAt:
+          $ref: '#/components/schemas/ConcurrencyTimestamp'
+        targetStatus:
+          $ref: '#/components/schemas/PmStatus'
+        confirmWarnings:
+          type: boolean
+          default: false
+
+    CreateProgramRequest:
+      type: object
+      additionalProperties: false
+      required: [workspaceId, name]
+      properties:
+        workspaceId:
+          $ref: '#/components/schemas/NonNilUuid'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: [string, 'null']
+    UpdateProgramRequest:
+      type: object
+      additionalProperties: false
+      required: [expectedUpdatedAt]
+      properties:
+        expectedUpdatedAt:
+          $ref: '#/components/schemas/ConcurrencyTimestamp'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        status:
+          $ref: '#/components/schemas/PmStatus'
+        description:
+          type: [string, 'null']
+
+    PortfolioLifecycleState:
+      type: string
+      enum:
+        - opportunity_candidate
+        - business_case_approved
+        - contracted
+        - development
+        - submission_approval
+        - launch_preparation
+        - launched_commercial
+        - lcm_optimization
+        - on_hold
+        - discontinuation
+        - retired
+    PortfolioStrategicPriority:
+      type: string
+      enum: [critical, high, medium, low, watchlist]
+    CreatePortfolioRequest:
+      type: object
+      additionalProperties: false
+      required: [organizationId, name]
+      properties:
+        organizationId:
+          $ref: '#/components/schemas/NonNilUuid'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        code:
+          type: [string, 'null']
+          maxLength: 80
+        description:
+          type: [string, 'null']
+          maxLength: 4000
+        lifecycleState:
+          allOf:
+            - $ref: '#/components/schemas/PortfolioLifecycleState'
+          default: opportunity_candidate
+        strategicPriority:
+          allOf:
+            - $ref: '#/components/schemas/PortfolioStrategicPriority'
+          default: medium
+        ownerId:
+          oneOf:
+            - $ref: '#/components/schemas/NonNilUuid'
+            - type: 'null'
+    UpdatePortfolioRequest:
+      type: object
+      additionalProperties: false
+      required: [expectedUpdatedAt]
+      anyOf:
+        - required: [name]
+        - required: [code]
+        - required: [description]
+        - required: [lifecycleState]
+        - required: [strategicPriority]
+        - required: [ownerId]
+      properties:
+        expectedUpdatedAt:
+          $ref: '#/components/schemas/ConcurrencyTimestamp'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        code:
+          type: [string, 'null']
+          maxLength: 80
+        description:
+          type: [string, 'null']
+          maxLength: 4000
+        lifecycleState:
+          $ref: '#/components/schemas/PortfolioLifecycleState'
+        strategicPriority:
+          $ref: '#/components/schemas/PortfolioStrategicPriority'
+        ownerId:
+          oneOf:
+            - $ref: '#/components/schemas/NonNilUuid'
+            - type: 'null'
+    AssignProjectPortfolioRequest:
+      type: object
+      additionalProperties: false
+      required: [portfolioId]
+      properties:
+        portfolioId:
+          oneOf:
+            - $ref: '#/components/schemas/NonNilUuid'
+            - type: 'null'
+
+    KpiTargetDirection:
+      type: string
+      enum: [increase, decrease, maintain, target_exact]
+    KpiSourceMode:
+      type: string
+      enum: [manual, automatic]
+    KpiValueType:
+      type: string
+      enum: [percent, number, currency, text]
+    KpiCadence:
+      type: string
+      enum: [manual_only, weekly, monthly, quarterly, yearly]
+    KpiCompletionMethod:
+      type: string
+      enum: [task_count, duration_weighted]
+    CreateKpiRequest:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: [string, 'null']
+        unit:
+          type: [string, 'null']
+        targetValue:
+          type: [number, 'null']
+        targetDirection:
+          allOf:
+            - $ref: '#/components/schemas/KpiTargetDirection'
+          default: target_exact
+        sourceMode:
+          allOf:
+            - $ref: '#/components/schemas/KpiSourceMode'
+          default: manual
+        valueType:
+          allOf:
+            - $ref: '#/components/schemas/KpiValueType'
+          default: number
+        cadence:
+          allOf:
+            - $ref: '#/components/schemas/KpiCadence'
+          default: manual_only
+        calculationKey:
+          type: [string, 'null']
+        formulaVersion:
+          type: [integer, 'null']
+          minimum: -2147483648
+          maximum: 2147483647
+        completionMethod:
+          oneOf:
+            - $ref: '#/components/schemas/KpiCompletionMethod'
+            - type: 'null'
+        commentRequired:
+          type: boolean
+          default: false
+        actionPlanRequired:
+          type: boolean
+          default: false
+        autoSnapshotEnabled:
+          type: boolean
+          default: false
+    UpdateKpiRequest:
+      type: object
+      additionalProperties: false
+      required: [expectedUpdatedAt]
+      properties:
+        expectedUpdatedAt:
+          $ref: '#/components/schemas/ConcurrencyTimestamp'
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: [string, 'null']
+        unit:
+          type: [string, 'null']
+        targetValue:
+          type: [number, 'null']
+        targetDirection:
+          $ref: '#/components/schemas/KpiTargetDirection'
+        sourceMode:
+          $ref: '#/components/schemas/KpiSourceMode'
+        valueType:
+          $ref: '#/components/schemas/KpiValueType'
+        cadence:
+          $ref: '#/components/schemas/KpiCadence'
+        calculationKey:
+          type: [string, 'null']
+        formulaVersion:
+          type: [integer, 'null']
+          minimum: -2147483648
+          maximum: 2147483647
+        completionMethod:
+          oneOf:
+            - $ref: '#/components/schemas/KpiCompletionMethod'
+            - type: 'null'
+        commentRequired:
+          type: boolean
+        actionPlanRequired:
+          type: boolean
+        autoSnapshotEnabled:
+          type: boolean
+    AppendKpiUpdateRequest:
+      type: object
+      additionalProperties: false
+      required: [value, updateDate]
+      properties:
+        value:
+          type: number
+        updateDate:
+          $ref: '#/components/schemas/CalendarDate'
+        note:
+          type: [string, 'null']

@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Microsoft sign-in</title>
+    <meta name="robots" content="noindex,nofollow" />
+  </head>
+  <body>
+    <!--
+      SP UX correction — MSAL blank redirect page.
+
+      Intentionally empty. Required as the SPA redirect URI for the
+      SharePoint folder picker delegated-auth flow (silent / ssoSilent /
+      popup). MUST NOT load React, the router, MSAL, or any script that
+      could navigate or strip the URL hash. MSAL's popup/iframe handler
+      in the opener window reads the hash directly from this document.
+    -->
+  </body>
+</html>
