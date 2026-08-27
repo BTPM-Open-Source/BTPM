@@ -2,6 +2,8 @@
 
 Thank you for helping improve BTPM. Contributions should preserve the product's execution-focused scope, canonical source-of-truth model and security boundaries.
 
+Before contributing product code, also read [Open-Source Maintenance and Release Policy](./docs/governance/OPEN_SOURCE_MAINTENANCE_AND_RELEASES.md) for the public release, migration, versioning and maintainer workflow.
+
 ## Before changing code
 
 1. Read the relevant implementation and tests before proposing a change.
