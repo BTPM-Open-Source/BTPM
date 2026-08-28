@@ -20,6 +20,9 @@ jobs:
     name: quality
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      VITE_SUPABASE_URL: https://example.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: ci-test-publishable-key
 
     steps:
       - name: Check out repository
