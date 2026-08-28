@@ -1,0 +1,3 @@
+# Default owner for all public repository changes.
+# Branch protection/rulesets must require Code Owner review for this to be enforced.
+* @SvS-SilverMode
